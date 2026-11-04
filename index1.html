@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اللوحة التفاعلية - الشروط البرمجية للصف العاشر (خط 20px)</title>
+    <!-- خطوط برمجية وعربية واضحة جداً -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- مكتبة الاحتفالات -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --pink-main: #FF6B9B;
+            --pink-soft: #FFB8D1;
+            --purple-main: #8A4FFF;
+            --purple-light: #E8DDFF;
+            --yellow-bright: #FFD166;
+            --blue-bright: #4CC9F0;
+            --green-bright: #06D6A0;
+            --bg-gradient: linear-gradient(135deg, #FFF0F5 0%, #E6E6FA 100%);
+            --card-shadow: 0 15px 35px rgba(138, 79, 255, 0.15);
+            
+            /* ثيم PyCharm Darcula */
+            --pycharm-bg: #2B2B2B;
+            --pycharm-gutter: #313335;
+            --pycharm-line-num: #878A8E;
+            --pycharm-keyword: #CC7832;
+            --pycharm-string: #6A8759;
+            --pycharm-func: #FFC66D;
+            --pycharm-number: #6897BB;
+            --pycharm-text: #A9B7C6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: #2B2D42;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* رأس اللوحة */
+        header {
+            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            border: 4px solid var(--pink-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--pink-main), var(--purple-main), var(--blue-bright), var(--yellow-bright));
+        }
+
+        h1 {
+            color: var(--purple-main);
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .teacher-tag {
+            display: inline-block;
+            background: var(--yellow-bright);
+            color: #4A3E00;
+            padding: 6px 22px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(255, 209, 102, 0.4);
+        }
+
+        /* الأقسام الثلاثة */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 3px solid #E0E0E0;
+            padding: 14px 28px;
+            border-radius: 20px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-5px);
+            border-color: var(--pink-main);
+        }
+
+        .tab-btn.active {
+            background: var(--purple-main);
+            color: white;
+            border-color: var(--purple-main);
+            box-shadow: 0 8px 25px rgba(138, 79, 255, 0.4);
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            border: 3px solid #F0F0F0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 3px dashed var(--purple-light);
+            padding-bottom: 15px;
+        }
+
+        .card-header .icon {
+            font-size: 2rem;
+            background: var(--purple-light);
+            padding: 10px;
+            border-radius: 16px;
+        }
+
+        .card-header h2 {
+            color: var(--purple-main);
+            font-size: 1.5rem;
+        }
+
+        /* نافذة محاكاة PyCharm بخط 20px */
+        .pycharm-window {
+            background: var(--pycharm-bg);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            margin-bottom: 20px;
+            border: 2px solid #3C3F41;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .pycharm-header {
+            background: #3C3F41;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #BBBBBB;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        .pycharm-tab {
+            background: var(--pycharm-bg);
+            padding: 6px 18px;
+            border-radius: 6px 6px 0 0;
+            color: #A9B7C6;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-top: 3px solid var(--purple-main);
+        }
+
+        .pycharm-editor {
+            display: flex;
+            font-family: 'JetBrains Mono', monospace;
+            /* حجم الخط المباشر للأكواد 20px */
+            font-size: 20px;
+            line-height: 1.7;
+            padding: 15px 0;
+            overflow-x: auto;
+        }
+
+        .line-numbers {
+            background: var(--pycharm-gutter);
+            color: var(--pycharm-line-num);
+            padding: 0 18px;
+            text-align: right;
+            user-select: none;
+            border-right: 2px solid #323232;
+            font-weight: bold;
+        }
+
+        .code-area {
+            padding: 0 20px;
+            color: var(--pycharm-text);
+            white-space: pre;
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        /* التظليل البرمجي */
+        .kw { color: var(--pycharm-keyword); font-weight: bold; }
+        .str { color: var(--pycharm-string); }
+        .fn { color: var(--pycharm-func); font-weight: bold; }
+        .num { color: var(--pycharm-number); font-weight: bold; }
+
+        /* أزرار التشغيل والتفاعل */
+        .action-btn {
+            background: linear-gradient(45deg, var(--pink-main), var(--purple-main));
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 155, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 25px rgba(255, 107, 155, 0.6);
+        }
+
+        /* المخرجات بخط 20px */
+        .pycharm-console {
+            background: #2B2B2B;
+            border-top: 2px solid #3C3F41;
+            padding: 18px 22px;
+            font-family: 'JetBrains Mono', monospace;
+            direction: ltr;
+            text-align: left;
+            color: #A9B7C6;
+            min-height: 70px;
+            font-size: 20px;
+            line-height: 1.6;
+        }
+
+        .console-success { color: var(--green-bright); font-weight: bold; }
+
+        /* الرسوم والأشكال التفاعلية */
+        .illustration-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #FAF8FF;
+            border-radius: 20px;
+            margin-top: 20px;
+            min-height: 160px;
+            text-align: center;
+        }
+
+        .towers-svg {
+            width: 110px;
+            height: 140px;
+            transition: transform 0.5s ease;
+        }
+
+        .towers-svg.bounce {
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-12px); }
+        }
+
+        /* عناصر التحكم بالأصوات */
+        .vote-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .vote-card {
+            background: white;
+            border: 3px solid var(--purple-light);
+            padding: 15px 25px;
+            border-radius: 18px;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .vote-card h4 { color: var(--purple-main); margin-bottom: 10px; }
+        .vote-val { font-size: 2.2rem; font-weight: 900; color: var(--pink-main); margin-bottom: 10px; }
+        
+        .counter-btn {
+            background: var(--purple-light);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--purple-main);
+            transition: 0.2s;
+        }
+
+        .counter-btn:hover {
+            background: var(--purple-main);
+            color: white;
+        }
+
+        /* شريط الفهرسة LTR */
+        .index-visualizer {
+            display: flex;
+            justify-content: center;
+            direction: ltr;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .index-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #F0F4FF;
+            border: 2px solid var(--blue-bright);
+            padding: 10px 16px;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .index-item.highlight {
+            background: var(--yellow-bright);
+            border-color: #FF9F1C;
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(255, 209, 102, 0.6);
+        }
+
+        .char-val { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: bold; color: #2B2D42; }
+        .idx-val { font-size: 1rem; color: #8D99AE; margin-top: 4px; font-weight: 700; }
+
+        .money-badge {
+            background: var(--yellow-bright);
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- هيدر اللوحة -->
+    <header>
+        <h1>✨ اللوحة التفاعلية: الشروط البرمجية في بايثون ✨</h1>
+        <p style="color: #666; font-weight: bold; margin-bottom: 10px;">للصف العاشر - مادة الحاسوب (بيئة PyCharm)</p>
+        <span class="teacher-tag">👩‍🏫 إعداد المعلمة: أ/ هند الراشد</span>
+    </header>
+
+    <!-- الأقسام الثلاثة -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab(1)">
+            <span>1️⃣</span> الشرط البرمجي البسيط (if)
+        </button>
+        <button class="tab-btn" onclick="switchTab(2)">
+            <span>2️⃣</span> الشرط البرمجي البديل (if...else)
+        </button>
+        <button class="tab-btn" onclick="switchTab(3)">
+            <span>3️⃣</span> الشرط المتسلسل (if...elif...else)
+        </button>
+    </div>
+
+    <!-- القسم الأول: الشرط البسيط -->
+    <div id="section1" class="section-content active">
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🎡</span>
+                <div>
+                    <h2>القسم الأول: الشرط البرمجي البسيط (if)</h2>
+                    <p style="color: #666;">حساب أصوات استفتاء رحلة أبراج الكويت عبر <code>count()</code> لاتخاذ قرار بشرط بسيط.</p>
+                </div>
+            </div>
+
+            <!-- نافذة PyCharm محاكاة LTR بخط مقاس 20px -->
+            <div class="pycharm-window">
+                <div class="pycharm-header">
+                    <div class="pycharm-tab">🐍 w5.py</div>
+                    <span>PyCharm 2026.1 (Font Size: 20px)</span>
+                </div>
+                <div class="pycharm-editor">
+                    <div class="line-numbers">
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+                    </div>
+                    <div class="code-area">trip = <span class="str">'''answer the question: Do you agree to go
+Abrag of kuwait trip? answer with (yes) or (no),
+Dana answer with yes, sara answer with yes,
+reem answer with no, lora answer with yes,
+rawan answer with no, maha answer with no
+mona answer with yes'''</span>
+
+voit_y = trip.<span class="fn">count</span>(<span class="str">'yes'</span>)
+voit_n = trip.<span class="fn">count</span>(<span class="str">'no'</span>)
+
+<span class="fn">print</span>(voit_y)
+<span class="fn">print</span>(voit_n)
+
+<span class="kw">if</span> voit_y > voit_n:
+    <span class="fn">print</span>(<span class="str">'The trip to Abrag of Kuwait is accepted'</span>)</div>
+                </div>
+                <div class="pycharm-console" id="console1">
+                    <span style="color: #808080;">Process finished with exit code 0 (اضغطي على زر التشغيل)</span>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="runSection1()">
+                ▶ Run 'w5.py' (تشغيل الكود)
+            </button>
+
+            <div class="illustration-area">
+                <div style="text-align: center;">
+                    <svg class="towers-svg" id="towersIcon" viewBox="0 0 100 150">
+                        <path d="M50 140 L50 10" stroke="#8A4FFF" stroke-width="6" stroke-linecap="round"/>
+                        <circle cx="50" cy="90" r="18" fill="#4CC9F0" />
+                        <circle cx="50" cy="45" r="12" fill="#FF6B9B" />
+                        <path d="M25 140 L25 50" stroke="#8A4FFF" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="25" cy="85" r="10" fill="#FFD166" />
+                        <rect x="10" y="138" width="80" height="6" fill="#06D6A0" rx="3"/>
+                    </svg>
+                    <p id="towerStatusText" style="font-weight: bold; color: var(--purple-main); margin-top: 10px;">في انتظار تشغيل البرنامج...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- القسم الثاني: الشرط البديل -->
+    <div id="section2" class="section-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🔀</span>
+                <div>
+                    <h2>القسم الثاني: الشرط البرمجي البديل (if...else)</h2>
+                    <p style="color: #666;">إضافة المسار البديل <code>else</code> للتعامل مع عدم القبول بالرحلة عند تساوي الأصوات أو إنقاصها.</p>
+                </div>
+            </div>
+
+            <div class="pycharm-window">
+                <div class="pycharm-header">
+                    <div class="pycharm-tab">🐍 w5_else.py</div>
+                    <span>PyCharm 2026.1 (Font Size: 20px)</span>
+                </div>
+                <div class="pycharm-editor">
+                    <div class="line-numbers">
+1
+2
+3
+4
+                    </div>
+                    <div class="code-area"><span class="kw">if</span> voit_y > voit_n:
+    <span class="fn">print</span>(<span class="str">'The trip to Abrag of Kuwait is accepted'</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">'the trip is not accepted'</span>)</div>
+                </div>
+                <div class="pycharm-console" id="console2">
+                    voit_y = 4 | voit_n = 3<br><span class="console-success">The trip to Abrag of Kuwait is accepted</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h3 style="color: var(--purple-main);">🎮 جربي التحكم بأصوات التصويت مباشرة:</h3>
+            </div>
+
+            <div class="vote-controls">
+                <div class="vote-card">
+                    <h4>أصوات (Yes) 👍</h4>
+                    <div class="vote-val" id="valY">4</div>
+                    <div>
+                        <button class="counter-btn" onclick="changeVote('y', -1)">-</button>
+                        <button class="counter-btn" onclick="changeVote('y', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="vote-card">
+                    <h4>أصوات (No) 👎</h4>
+                    <div class="vote-val" id="valN">3</div>
+                    <div>
+                        <button class="counter-btn" onclick="changeVote('n', -1)">-</button>
+                        <button class="counter-btn" onclick="changeVote('n', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="illustration-area" style="background: #FFF5F8;">
+                <div id="decisionCard" style="padding: 15px 30px; border-radius: 16px; background: white; border: 3px solid var(--green-bright); font-size: 1.2rem; font-weight: bold; color: var(--green-bright);">
+                    🎉 القرار الحالي: تم قبول الرحلة إلى أبراج الكويت!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- القسم الثالث: الشرط المتسلسل -->
+    <div id="section3" class="section-content">
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">💶</span>
+                <div>
+                    <h2>القسم الثالث: الشرط البرمجي المتسلسل (if...elif...else)</h2>
+                    <p style="color: #666;">استخدام الدالة <code>find('.')</code> لاكتشاف موقع النقطة لتصنيف فئات النقود الكويتية.</p>
+                </div>
+            </div>
+
+            <div class="pycharm-window">
+                <div class="pycharm-header">
+                    <div class="pycharm-tab">🐍 w5a.py</div>
+                    <span>PyCharm 2026.1 (Font Size: 20px)</span>
+                </div>
+                <div class="pycharm-editor">
+                    <div class="line-numbers">
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+                    </div>
+                    <div class="code-area">money = <span class="str">'361.150'</span>
+value = money.<span class="fn">find</span>(<span class="str">'.'</span>)
+<span class="fn">print</span>(money.<span class="fn">find</span>(<span class="str">'.'</span>))
+
+<span class="kw">if</span> value == <span class="num">3</span>:
+    <span class="fn">print</span>(<span class="str">'the money is hundreds of denars'</span>)
+<span class="kw">elif</span> value == <span class="num">2</span>:
+    <span class="fn">print</span>(<span class="str">'the money is tenths of denars'</span>)
+<span class="kw">elif</span> value == <span class="num">1</span>:
+    <span class="fn">print</span>(<span class="str">'the money is denars'</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">'the money not allowed '</span>)</div>
+                </div>
+                <div class="pycharm-console" id="console3">
+                    3<br><span class="console-success">the money is hundreds of denars</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 15px;">
+                <h4 style="color: var(--purple-main);">📍 الفهرسة التفاعلية للنص من اليسار إلى اليمين (LTR):</h4>
+                <div class="index-visualizer" id="indexVisualizer"></div>
+            </div>
+
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
+                <label style="font-weight: bold; font-size: 1.1rem;">جربي إدخال مبلغ نقدية:</label>
+                <input type="text" id="moneyInput" value="361.150" style="padding: 10px 15px; border-radius: 12px; border: 2px solid var(--purple-main); font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; width: 150px; text-align: center; direction: ltr;">
+                <button class="action-btn" onclick="analyzeMoney()" style="padding: 10px 20px; font-size: 1rem;">فحص الفئة</button>
+            </div>
+
+            <div class="illustration-area">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 5px;">🇰🇼 💵</div>
+                    <div class="money-badge" id="moneyCategoryText">الفئة النقدية: مئات الدنانير (Hundreds of Denars)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التفاعل -->
+    <script>
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === (tabIndex - 1));
+            });
+
+            document.querySelectorAll('.section-content').forEach((sec, idx) => {
+                sec.classList.toggle('active', idx === (tabIndex - 1));
+            });
+
+            if(tabIndex === 3) analyzeMoney();
+        }
+
+        function runSection1() {
+            const voit_y = 4;
+            const voit_n = 3;
+            const console1 = document.getElementById('console1');
+            const towers = document.getElementById('towersIcon');
+            const towerText = document.getElementById('towerStatusText');
+
+            console1.innerHTML = `${voit_y}<br>${voit_n}<br><span class="console-success">The trip to Abrag of Kuwait is accepted</span>`;
+            
+            towers.classList.add('bounce');
+            towerText.innerText = "🎉 تم قبول الرحلة إلى أبراج الكويت!";
+            towerText.style.color = "var(--pink-main)";
+
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        }
+
+        let vY = 4, vN = 3;
+        function changeVote(type, delta) {
+            if (type === 'y') vY = Math.max(0, vY + delta);
+            if (type === 'n') vN = Math.max(0, vN + delta);
+
+            document.getElementById('valY').innerText = vY;
+            document.getElementById('valN').innerText = vN;
+
+            const console2 = document.getElementById('console2');
+            const card = document.getElementById('decisionCard');
+
+            if (vY > vN) {
+                console2.innerHTML = `voit_y = ${vY} | voit_n = ${vN}<br><span class="console-success">The trip to Abrag of Kuwait is accepted</span>`;
+                card.innerText = "🎉 القرار الحالي: تم قبول الرحلة إلى أبراج الكويت!";
+                card.style.borderColor = "var(--green-bright)";
+                card.style.color = "var(--green-bright)";
+            } else {
+                console2.innerHTML = `voit_y = ${vY} | voit_n = ${vN}<br><span style="color: var(--pink-main);">the trip is not accepted</span>`;
+                card.innerText = "❌ القرار الحالي: الرحلة غير مقبولة (الأصوات غير كافية)";
+                card.style.borderColor = "var(--pink-main)";
+                card.style.color = "var(--pink-main)";
+            }
+        }
+
+        function analyzeMoney() {
+            const moneyVal = document.getElementById('moneyInput').value;
+            const visualizer = document.getElementById('indexVisualizer');
+            visualizer.innerHTML = '';
+
+            const dotIndex = moneyVal.indexOf('.');
+
+            for (let i = 0; i < moneyVal.length; i++) {
+                const char = moneyVal[i];
+                const item = document.createElement('div');
+                item.className = 'index-item' + (i === dotIndex ? ' highlight' : '');
+                item.innerHTML = `<span class="char-val">${char}</span><span class="idx-val">${i}</span>`;
+                visualizer.appendChild(item);
+            }
+
+            const console3 = document.getElementById('console3');
+            const badge = document.getElementById('moneyCategoryText');
+
+            if (dotIndex === 3) {
+                console3.innerHTML = `${dotIndex}<br><span class="console-success">the money is hundreds of denars</span>`;
+                badge.innerText = "الفئة النقدية: مئات الدنانير (Hundreds of Denars)";
+                badge.style.background = "var(--yellow-bright)";
+            } else if (dotIndex === 2) {
+                console3.innerHTML = `${dotIndex}<br><span class="console-success">the money is tenths of denars</span>`;
+                badge.innerText = "الفئة النقدية: عشرات الدنانير (Tenths of Denars)";
+                badge.style.background = "var(--blue-bright)";
+            } else if (dotIndex === 1) {
+                console3.innerHTML = `${dotIndex}<br><span class="console-success">the money is denars</span>`;
+                badge.innerText = "الفئة النقدية: دنانير (Denars)";
+                badge.style.background = "var(--pink-soft)";
+            } else {
+                console3.innerHTML = `${dotIndex}<br><span style="color: var(--pink-main);">the money not allowed </span>`;
+                badge.innerText = "الفئة غير مقبولة (Not Allowed)";
+                badge.style.background = "#E0E0E0";
+            }
+        }
+
+        window.onload = function() {
+            analyzeMoney();
+        };
+    </script>
+</body>
+</html>
